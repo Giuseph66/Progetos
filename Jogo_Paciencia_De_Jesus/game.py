@@ -8,8 +8,8 @@ def tela_inicio():
     tela = pygame.display.set_mode((1100, 700))
     pygame.display.set_caption("Jesus_Ateu Progetoss")
 
-    preto = (255, 255, 255)
-    BRANCO = (0, 0, 0)
+    BRANCO = (255, 255, 255)
+    preto = (0, 0, 0)
     amarelo = (255, 255, 0)
 
     background = pygame.image.load("Jogo_Paciencia_De_Jesus/img/fundo_inicio.jpg").convert()
