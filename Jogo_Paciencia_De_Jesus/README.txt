@@ -1,0 +1,3 @@
+Primeiro jogo criado....
+Tem a intuição de provocar o jogador a chegar ao mais auto nível(150)
+É bem simples mas acaba sendo bem desafiador !

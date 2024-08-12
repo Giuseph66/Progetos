@@ -72,9 +72,12 @@ class Tudo():
     def treino_chek(self):
         self.permicao_treino=True if self.check_var_treino.get() else False
         if self.check_var_treino.get()==1:
-            self.chekin_auto["fg"]="#00ff2a"
-            self.chekin_auto["text"]="Conectado"    
-            self.conectar()
+            cone=self.conectar()
+            if cone:
+                self.chekin_auto["fg"]="#00ff2a"
+                self.chekin_auto["text"]="Conectado" 
+            else:
+                self.check_var_comu.set(False)
         else:
             self.chekin_auto["fg"]="white"
             self.chekin_auto["text"]="Conectar Whatts"
@@ -93,23 +96,28 @@ class Tudo():
             self.comu_["fg"]="white"
             self.comu_["text"]="Avisa whatts"
     def conectar(self):
-        self.Serv= Service(ChromeDriverManager().install())
-        self.nav=webdriver.Chrome(service=self.Serv)
-        self.nav.get("https://web.whatsapp.com")
-        element_present = False
-        while not element_present:
-            try:
-                WebDriverWait(self.nav, 1).until(EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/div[1]/div/div/button/div[2]/span')))
-                element_present = True
-            except:
-                pass
-        time.sleep(1)
-        self.nav.find_element('xpath','//*[@id="side"]/div[1]/div/div/button/div[2]/span').click()
-        self.nav.find_element('xpath','//*[@id="side"]/div[1]/div/div/div[2]/div/div[1]/p').send_keys("Voce")
-        self.nav.find_element('xpath','//*[@id="side"]/div[1]/div/div/div[2]/div/div[1]/p').send_keys(Keys.ENTER)
-        time.sleep(1)
-        self.nav.find_element('xpath','//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]/p').send_keys("Test")
-        self.nav.find_element('xpath','//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]/p').send_keys(Keys.ENTER)
+        try:
+            self.Serv= Service(ChromeDriverManager().install())
+            self.nav=webdriver.Chrome(service=self.Serv)
+            self.nav.get("https://web.whatsapp.com")
+            element_present = False
+            while not element_present:
+                try:
+                    WebDriverWait(self.nav, 1).until(EC.presence_of_element_located((By.XPATH, '//*[@id="side"]/div[1]/div/div/button/div[2]/span')))
+                    element_present = True
+                except:
+                    pass
+            time.sleep(1)
+            self.nav.find_element('xpath','//*[@id="side"]/div[1]/div/div/button/div[2]/span').click()
+            self.nav.find_element('xpath','//*[@id="side"]/div[1]/div/div/div[2]/div/div[1]/p').send_keys("Voce")
+            self.nav.find_element('xpath','//*[@id="side"]/div[1]/div/div/div[2]/div/div[1]/p').send_keys(Keys.ENTER)
+            time.sleep(1)
+            self.nav.find_element('xpath','//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]/p').send_keys("Test")
+            self.nav.find_element('xpath','//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]/p').send_keys(Keys.ENTER)
+            return True
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao iniciar o WebDriver: {e}")
+            return False 
     def atualizar_tela(self):
         c=self.camera_qual.get()
         if c=="":
