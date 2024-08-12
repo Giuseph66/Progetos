@@ -15,7 +15,7 @@ class Admin:
         )
         self.janela_principal.title("Usuario")
         self.janela_usu = Frame(
-            self.janela_principal, width=1550, height=1000, bg="white"
+            self.janela_principal, width=1550, height=1000, bg="black"
         )
         self.janela_usu.place(x=0,y=0)
         self.topframe = LabelFrame(
@@ -42,33 +42,19 @@ class Admin:
         )
         self.mainframe.place(x=(1550 - 1200)/2,y=100)
 
-        img = PhotoImage(file="ImageTk/Perfil.png")
+        img = PhotoImage(file="ImageTk/companhia.png")
         """img=img.subsamples(a,b)"""
         self.clientes_bu = Button(
             self.mainframe,
-            text="Clientes",
+            text="Empresa",
             font="arial 11 bold",
             image=img,
             bd=1,
-            command=self.cliente,
+            command=self.Empresa,
             compound=TOP,
         )
         self.clientes_bu.place(x=620, y=27)
         self.clientes_bu.image = img
-
-        img = PhotoImage(file="ImageTk/Funcionario.png")
-        img = img.subsample(20)
-        self.funcionario_bu = Button(
-            self.mainframe,
-            text="Funcionario",
-            font="arial 11 bold",
-            image=img,
-            bd=1,
-            command=self.funcionario,
-            compound=TOP,
-        )
-        self.funcionario_bu.place(x=720, y=27)
-        self.funcionario_bu.image = img
 
         img = PhotoImage(file="ImageTk/sair.png")
         self.sair = Button(
@@ -96,19 +82,6 @@ class Admin:
         self.trocausuario.place(x=875, y=27)
         self.trocausuario.image = img
 
-        img = PhotoImage(file="ImageTk/itens.png")
-        self.pedidos_f = Button(
-            self.mainframe,
-            text="Pedidos",
-            font="arial 11 bold",
-            image=img,
-            bd=1,
-            command=self.Pedidos,
-            compound=TOP,
-        )
-        self.pedidos_f.place(x=47, y=27)
-        self.pedidos_f.image = img
-
         img = PhotoImage(file="ImageTk/inventario.png")
         self.itens_bu = Button(
             self.mainframe,
@@ -135,20 +108,8 @@ class Admin:
         self.vendas_h.place(x=370, y=27)
         self.vendas_h.image = img
 
-        img = PhotoImage(file="ImageTk/caixa.png")
-        self.caixa = Button(
-            self.mainframe,
-            text="Caixa",
-            font="arial 11 bold",
-            image=img,
-            bd=1,
-            command=self.chama_caixa,
-            compound=TOP,
-        )
-        self.caixa.place(x=510, y=27)
-        self.caixa.image = img
-        self.funcionario()
-
+        self.Empresa()
+    
     def estoque(self):
         img = PhotoImage(file="ImageTk/confg.png")
         self.table_itens = LabelFrame(
@@ -176,27 +137,25 @@ class Admin:
         )
         self.pesquisa_cdg_digito.bind("<KeyPress-c>", lambda event: self.chama_caixa())
         self.pesquisa_cdg_digito.bind(
-            "<KeyPress>", lambda event: self.tabela_pesquisa_cdg()
+            "<KeyRelease>", lambda event: self.tabela_pesquisa_cdg()
         )
         self.pesquisa_cdg_digito.bind(
             "<KeyPress-a>", lambda event: self.execute_itens()
         )
         self.pesquisa_cdg_digito.bind("<KeyPress-s>", lambda event: self._del_usu_())
-        self.pesquisa_cdg_digito.bind("<KeyPress-k>", lambda event: self.cliente())
+        self.pesquisa_cdg_digito.bind("<KeyPress-k>", lambda event: self.Empresa())
         self.pesquisa_cdg_digito.place(x=0, y=18, height=25)
         self.pesquisa_nome_testo = Entry(self.table_itens, width=150, bg="white", bd=1)
         self.pesquisa_nome_testo.bind(
             "<Return>", lambda event: self.pesquisa_cdg_digito.focus()
         )
         self.pesquisa_nome_testo.bind(
-            "<KeyPress>", lambda event: self.tabela_pesquisa_nome()
+            "<KeyRelease>", lambda event: self.tabela_pesquisa_nome()
         )
         self.pesquisa_nome_testo.place(x=220, y=18, height=25)
 
         self.pesquisa_cdg_digito.focus()
-
-        Banco = sqlite3.connect("banco.db")
-        b = Banco.cursor()
+        
         estilo = ttk.Style()
         estilo.configure(
             "Treeview",
@@ -219,7 +178,9 @@ class Admin:
         self.table.heading("#1", text="Produto")
         self.table.heading("#2", text="Preço")
         self.table.heading("#3", text="Quantidade")
-
+          
+        Banco = sqlite3.connect("banco.db")
+        b = Banco.cursor()
         b.execute("SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque")
         rows = b.fetchall()
         for row in rows:
@@ -227,709 +188,250 @@ class Admin:
                 parent="", index="end", text=row[0], values=(row[1], row[2], row[3])
             )
             self.table.place(x=0, y=50, width=1200)
-        Banco.close()
-
         self.edts.place_forget()
 
     def tabela_pesquisa_cdg(self):
-        self.table.destroy()
+        codigim=self.pesquisa_cdg_digito.get()        
         Banco = sqlite3.connect("banco.db")
         b = Banco.cursor()
-        estilo = ttk.Style()
-        estilo.configure(
-            "Treeview",
-            font=("Arial", 15),
-            background="#9DCFFA",
-            foreground="black",
-            rowheight=25,
-            fieldbackground="#93FDF6",
-        )
-        self.table_1 = ttk.Treeview(self.table_itens, height=800)
-        self.table_1.place(x=0, y=50, width=1200)
-        self.table_1["columns"] = ("Codigo", "PRODUTO", "PREÇO", "QTDE")
 
-        self.table_1.column("#0", width=1, minwidth=1)
-        self.table_1.column("#1", width=50, minwidth=20)
-        self.table_1.column("#2", width=20, minwidth=20)
-        self.table_1.column("#3", width=50, minwidth=20)
+        try:
+            if codigim:
+                b.execute("SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque WHERE Codigo LIKE ?", ('%' + codigim + '%',))
+            else:
+                b.execute("SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque")
 
-        self.table_1.heading("#0", text="Codigo")
-        self.table_1.heading("#1", text="Produto")
-        self.table_1.heading("#2", text="Preço")
-        self.table_1.heading("#3", text="Quantidade")
+            rows = b.fetchall()
+            self.clear_table()
+            for row in rows:
+                self.table.insert("", "end", text=row[0], values=(row[1], row[2], row[3]))
 
-        b.execute(
-            "SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque WHERE Codigo=?",
-            (self.pesquisa_cdg_digito.get(),),
-        )
-        rows = b.fetchall()
-        for row in rows:
-            self.table_1.insert(
-                parent="", index="end", text=row[0], values=(row[1], row[2], row[3])
-            )
-            self.table_1.place(x=0, y=50, width=1200)
-        Banco.close()
+        except sqlite3.Error as e:
+            print("Erro ao acessar o banco de dados:", e)
+
+        finally:
+            Banco.close()
 
     def limpa_pesquisa(self):
         self.pesquisa_cdg_digito.delete(0, END)
         self.pesquisa_nome_testo.delete(0, END)
 
     def tabela_pesquisa_nome(self):
-        self.table.destroy()
+        texto_digitado = self.pesquisa_nome_testo.get()
         Banco = sqlite3.connect("banco.db")
         b = Banco.cursor()
-        estilo = ttk.Style()
-        estilo.configure(
-            "Treeview",
-            font=("Arial", 15),
-            background="#9DCFFA",
-            foreground="black",
-            rowheight=25,
-            fieldbackground="#93FDF6",
-        )
-        self.table_2 = ttk.Treeview(self.table_itens, height=800)
-        self.table_2.place(x=0, y=50, width=1200)
-        self.table_2["columns"] = ("Codigo", "PRODUTO", "PREÇO", "QTDE")
 
-        self.table_2.column("#0", width=1, minwidth=1)
-        self.table_2.column("#1", width=50, minwidth=20)
-        self.table_2.column("#2", width=20, minwidth=20)
-        self.table_2.column("#3", width=50, minwidth=20)
-
-        self.table_2.heading("#0", text="Codigo")
-        self.table_2.heading("#1", text="Produto")
-        self.table_2.heading("#2", text="Preço")
-        self.table_2.heading("#3", text="Quantidade")
-
-        b.execute(
-            "SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque WHERE Codigo=?",
-            (self.pesquisa_nome_testo.get(),),
-        )
-        rows = b.fetchall()
-        for row in rows:
-            self.table_2.insert(
-                parent="", index="end", text=row[0], values=(row[1], row[2], row[3])
-            )
-            self.table_2.place(x=0, y=50, width=1200)
-        Banco.close()
-
-    def Pedidos(self):
-        img = PhotoImage(file="ImageTk/confg.png")
-        self.table_pedidos = LabelFrame(
-            self.janela_usu, width=1250, height=640, bg="black"
-        )
-        self.table_pedidos.place(x=(1550 - 1250)/2, y=205)
-        self.table_pedidos_add = Button(
-            self.table_pedidos, image=img, bd=0, compound=TOP
-        )
-        self.table_pedidos_add.place(x=1220, y=0)
-        self.table_itens_add.image = img
-        if self.table_itens.winfo_exists:
-            self.table_itens.place_forget()
-        if self.table_clientes.winfo_exists:
-            self.table_clientes.place_forget()
-        if self.table_vendas.winfo_exists:
-            self.table_vendas.place_forget()
-        if self.table_funcionarios.winfo_exists:
-            self.table_funcionarios.place_forget()
-    def funcionario(self):
-        img = PhotoImage(file="ImageTk/confg.png")
-        self.table_funcionarios = LabelFrame(
-            self.janela_usu, width=1250, height=640, bg="green"
-        )
-        self.table_funcionarios.place(x=(1550 - 1250)/2, y=205)
-
-        self.conexão = sqlite3.connect('banco.db')
-        self.cursor = self.conexão.cursor()
-        self.calen=Calendar(self.table_funcionarios, bordercolor="#014502",font="arial 12 bold")
-        self.calen["background"] = "#014502" 
-        self.calen.place(x=945,y=0,width=300,height=250)
-        self.calen.bind("<<CalendarSelected>>", lambda event:self.limpa_fun())
-        self.cursor.execute("SELECT nome FROM Pessoas")
-        self.dados = self.cursor.fetchall()
-        self.combo_func=ttk.Combobox(self.table_funcionarios,justify="center",font="arial 12 bold",width=41)
-        self.combo_func["values"] = [row[0] for row in self.dados]
-        self.combo_func.bind("<<ComboboxSelected>>",lambda event:self.atualisa_func())
-        self.combo_func.set("Funcionario")
-        self.combo_func.place(x=55,y=10)
-        self.complemento_calen()
-        #self.but_confia=Button(self.table_funcionarios,text=)
-        if self.table_itens.winfo_exists:
-            self.table_itens.place_forget()
-        if self.table_clientes.winfo_exists:
-            self.table_clientes.place_forget()
-        if self.table_vendas.winfo_exists:
-            self.table_vendas.place_forget()
-        if self.table_pedidos.winfo_exists:
-            self.table_pedidos.place_forget()
-    def limpa_fun(self):
-        self.ponto.destroy()
-        self.ponto_2.destroy()
-        self.complemento_calen()
-        self.atualisa_func()
-    def complemento_calen(self):
-        self.data=self.calen.get_date()
-        self.dia,self.mes,self.ano=self.data.split("/")
-        self.dia_semana = calendar.weekday(int(self.ano),int(self.mes),int(self.dia))
-        self.dias_da_semana = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado", "Domingo"]
-        self.meses_do_ano = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-        #messagebox.showinfo("sl",f"O dia da semana é {self.dias_da_semana[self.dia_semana]}")
-        self.quantidade_de_dias = calendar.monthrange(int(self.ano), int(self.mes))[1]
-        self.txtx=Label(self.table_funcionarios,text="Manhâ:",fg="white",width=6,font="arial 12 bold",bg="green",bd=2)
-        self.txtx.place(x=980,y=250)
-        self.txtx=Label(self.table_funcionarios,text="Almoço:",fg="black",width=6,font="arial 12 bold",bg="green",bd=2)
-        self.txtx.place(x=1070,y=250)
-        self.txtx=Label(self.table_funcionarios,text="Tarde:",fg="white",width=6,font="arial 12 bold",bg="green",bd=2)
-        self.txtx.place(x=1150,y=250)
-        self.txtx=Label(self.table_funcionarios,text="Entra:",fg="white",width=6,font="arial 12 bold",bg="green",bd=2)
-        self.txtx.place(x=945,y=270)
-        self.txtx=Label(self.table_funcionarios,text="Sai:",fg="white",width=6,font="arial 12 bold",bg="green",bd=2)
-        self.txtx.place(x=1015,y=270)
-        self.txtx=Label(self.table_funcionarios,text="Entra:",fg="white",width=6,font="arial 12 bold",bg="green",bd=2)
-        self.txtx.place(x=1115,y=270)
-        self.txtx=Label(self.table_funcionarios,text="Sai:",fg="white",width=6,font="arial 12 bold",bg="green",bd=2)
-        self.txtx.place(x=1185,y=270)
-        self.ehora_m=Entry(self.table_funcionarios,width=6,font="arial 12 bold",bg="#ded63c",bd=2)
-        self.ehora_m.bind("<Return>", lambda event:self.shora_m.focus())
-        self.ehora_m.bind("<KeyPress-0>", lambda event:self.auto())
-        self.ehora_m.bind("<KeyPress-F>", lambda event:self.auto_O())
-        self.ehora_m.place(x=945,y=290)
-        self.shora_m=Entry(self.table_funcionarios,width=6,font="arial 12 bold",bg="#ded63c",bd=2)
-        self.shora_m.bind("<Return>", lambda event:self.ehora_t.focus())
-        self.shora_m.place(x=1015,y=290)
-        self.ehora_t=Entry(self.table_funcionarios,width=6,font="arial 12 bold",bg="#ded63c",bd=2)
-        self.ehora_t.bind("<Return>", lambda event:self.shora_t.focus())
-        self.ehora_t.place(x=1115,y=290)
-        self.shora_t=Entry(self.table_funcionarios,width=6,font="arial 12 bold",bg="#ded63c",bd=2)
-        self.shora_t.bind("<Return>", lambda event:self.cadas_ponto())
-        self.shora_t.place(x=1185,y=290)
-        self.slv_hrs_butao=Button(self.table_funcionarios,width=6,command=self.cadas_ponto,text="Salvar",font="arial 12 bold",bg="white",bd=2)
-        self.slv_hrs_butao.place(x=1150,y=320)
-        self.txtx=Label(self.table_funcionarios,text="Salário:",fg="white",width=6,font="arial 12 bold",bg="green",bd=2)
-        self.txtx.place(x=475,y=10)
-        self.txtx=Label(self.table_funcionarios,text="Horas trabalhadas:",fg="white",width=20,font="arial 12 bold",bg="green",bd=2)
-        self.txtx.place(x=610,y=10)
-        self.salario=Entry(self.table_funcionarios,width=6,font="arial 12 bold",bg="#70f06c",bd=2)
-        self.salario.bind("<Return>", lambda event:self.shora_t.focus())
-        self.salario.place(x=540,y=10)
-        self.horas_trabalhadas=Entry(self.table_funcionarios,width=6,font="arial 12 bold",bg="#70f06c",bd=2)
-        self.horas_trabalhadas.bind("<Return>", lambda event:self.shora_t.focus())
-        self.horas_trabalhadas.place(x=800,y=10)
-        self.atalio=Button(self.table_funcionarios,width=6,command=self.auto,text="Auto",font="arial 12 bold",bg="green",bd=2)
-        self.atalio.place(x=1000,y=320)
-        
-        self.pontos()
-    def atualisa_func(self):
-        self.sal=self.salario.get()
-        self.hr=self.horas_trabalhadas.get()
-        self.funcionario_combo=self.combo_func.get()
-        dia_sem=self.dias_da_semana[self.dia_semana]
-        self.cursor.execute("SELECT salario,hora FROM ponto WHERE funcionario=?",(self.funcionario_combo,))
-        sla=self.cursor.fetchone()
-        if sla is not None:
-            salario,hora=sla
-            self.salario.delete(0,END)
-            self.horas_trabalhadas.delete(0,END)
-            self.salario.insert(0,str(salario))
-            self.horas_trabalhadas.insert(0,str(hora))
-        else:
-            self.salario.delete(0,END)
-            self.horas_trabalhadas.delete(0,END)
-
-        self.cursor.execute("SELECT entri_manha, sai_manha, entri_tarde, sai_tarde FROM ponto WHERE data=? AND funcionario=?", (self.data, self.funcionario_combo))
-        sla1=self.cursor.fetchone()
-        if sla1 is not None:
-            entri_manha,sai_manha,entri_tarde,sai_tarde=sla1
-            self.ehora_m.delete(0,END)
-            self.shora_m.delete(0,END)
-            self.ehora_t.delete(0,END)
-            self.shora_t.delete(0,END)
-            if entri_manha is not None:
-                self.ehora_m.insert(0,entri_manha)
-            if sai_manha is not None:
-                self.shora_m.insert(0,sai_manha)
-            if entri_tarde is not None:
-                self.ehora_t.insert(0,entri_tarde)
-            if sai_tarde is not None:
-                self.shora_t.insert(0,sai_tarde)
-        else:
-            self.cursor.execute("INSERT INTO ponto (data,funcionario,salario,hora,dia_semana) VALUES(?,?,?,?,?)", (self.data, self.funcionario_combo,self.sal,self.hr,dia_sem))
-            self.conexão.commit()
-        
-        self.ponto.destroy()
-        self.ponto_2.destroy()
-        self.pontos()
-    def cadas_ponto(self):
-        self.entri_m=self.ehora_m.get()
-        self.sai_m=self.shora_m.get()
-        self.entri_t=self.ehora_t.get()
-        self.sai_t=self.shora_t.get()
-        self.cursor.execute("UPDATE ponto SET entri_manha=?, sai_manha=?, entri_tarde=?, sai_tarde=? WHERE data=? AND funcionario=?", (self.entri_m,self.sai_m,self.entri_t,self.sai_t,self.data, self.funcionario_combo))
-        self.conexão.commit()
-        messagebox.showinfo("Salvo",f"Ponto do dia {self.data} foi salvo!!!")
-        self.limpa_fun()
-        
-    def auto(self):
-        sal=self.ehora_m.get()
-        if sal=="":
-            self.ehora_m.delete(0,END)
-            self.shora_m.delete(0,END)
-            self.ehora_t.delete(0,END)
-            self.shora_t.delete(0,END)
-            self.ehora_m.insert(0,"7:0")
-            self.shora_m.insert(0,"11:00")
-            self.ehora_t.insert(0,"13:00")
-            self.shora_t.insert(0,"18:00")
-            self.shora_t.focus()
-    def auto_O(self):
-        sal=self.ehora_m.get()
-        if sal =="":
-            self.shora_m.delete(0,END)
-            self.ehora_t.delete(0,END)
-            self.shora_t.delete(0,END)
-            self.shora_m.insert(0,"O")
-            self.ehora_t.insert(0,"L")
-            self.shora_t.insert(0,"G")
-            self.shora_t.focus()
-    def pontos(self):
-        if hasattr(self, 'fram_hole'):
-            if self.fram_hole is not None:
-                self.fram_hole.place_forget() 
-        self.funcionario_combo=self.combo_func.get()
-        self.ponto=LabelFrame(self.table_funcionarios,width=450,height=585,bg="#ded63c",bd=2)
-        self.ponto.place(x=5,y=45)
-        self.ponto_2=LabelFrame(self.table_funcionarios,width=450,height=585,bg="#ded63c",bd=2)
-        self.ponto_2.place(x=475,y=45)
-        mes_fun=StringVar(value=self.meses_do_ano[int(self.mes)-1])
-        self.mes_fun=Entry(self.ponto,textvariable=mes_fun,justify="center",font="arial 12 bold",bg="#f0ea7f",fg="black",width=34)
-        self.mes_fun.place(x=70,y=50)
-        mes_fun=StringVar(value=self.meses_do_ano[int(self.mes)-1])
-        self.mes_fun=Entry(self.ponto_2,textvariable=mes_fun,justify="center",font="arial 12 bold",bg="#f0ea7f",fg="black",width=34)
-        self.mes_fun.place(x=70,y=50)
-        self.calculu_buton=Button(self.ponto,width=30,command=self.calculo,text="Calcular Horas extras",font="arial 12 bold",bg="green",bd=2)
-        self.calculu_buton.place(x=70,y=10)
-        self.calculu_buton2=Button(self.ponto_2,width=30,command=self.calculo,text="Calcular Horas extras",font="arial 12 bold",bg="green",bd=2)
-        self.calculu_buton2.place(x=70,y=10)
-        self.calculu_buton3=Button(self.ponto_2,width=30,command=self.calculo,text="Calcular Horas extras",font="arial 12 bold",bg="green",bd=2)
-        self.calculu_buton3.place(x=70,y=540)
-        if self.quantidade_de_dias==30:
-            self.calculu_buton4=Button(self.ponto,width=30,command=self.calculo,text="Calcular Horas extras",font="arial 12 bold",bg="green",bd=2)
-            self.calculu_buton4.place(x=70,y=540)
-        
-        cont=1
-        y=80
-        dia_semana = calendar.weekday(int(self.ano),int(self.mes),int(cont))
-        dias=self.dias_da_semana[dia_semana]
-        mes_fun=StringVar(value=cont)
-        mes_fun1=StringVar(value=cont)
-        mes_fun2=StringVar(value=cont)
-        mes_fun3=StringVar(value=cont)
-        mes_fun4=StringVar(value=f"0{cont} : {dias[0]}")
-        self.dias_da_semana_Cores = ["#fa2007", "#fa7107", "#f4fa50", "#75ffd1", "#75dfff", "#64fab1","#31fa2a"]
-        for _ in range(int((self.quantidade_de_dias+1)/2)):
-            dia_semana = calendar.weekday(int(self.ano),int(self.mes),int(cont))
-            cor=self.dias_da_semana_Cores[dia_semana]
-            dias=self.dias_da_semana[dia_semana]
-            if cont<=9:
-                self.data_atu=f"0{str(cont)}/{self.mes}/{self.ano}"
-                mes_fun4=StringVar(value=f"0{cont} : {dias[0]}")
+        try:
+            if texto_digitado:
+                b.execute("SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque WHERE PRODUTO LIKE ?", ('%' + texto_digitado + '%',))
             else:
-                self.data_atu=f"{str(cont)}/{self.mes}/{self.ano}"
-                mes_fun4=StringVar(value=f"{cont} : {dias[0]}")
-            self.ehora_m_o=Entry(self.ponto,textvariable=mes_fun,justify="center",font="arial 12 bold",bg=cor,fg="black",width=10)
-            self.ehora_m_o.place(x=2,y=y)
-            self.shora_m_o=Entry(self.ponto,textvariable=mes_fun1,justify="center",font="arial 12 bold",bg=cor,fg="black",width=10)
-            self.shora_m_o.place(x=99,y=y)
-            self.ehora_t_o=Entry(self.ponto,textvariable=mes_fun2,justify="center",font="arial 12 bold",bg=cor,fg="black",width=10)
-            self.ehora_t_o.place(x=197,y=y)
-            self.shora_t_o=Entry(self.ponto,textvariable=mes_fun3,justify="center",font="arial 12 bold",bg=cor,fg="black",width=10)
-            self.shora_t_o.place(x=296,y=y)
-            self.ale=Entry(self.ponto,textvariable=mes_fun4,font="arial 12 bold",bg=cor,fg="black",width=5)
-            self.ale.place(x=395,y=y)
-            self.cursor.execute("SELECT entri_manha, sai_manha, entri_tarde, sai_tarde FROM ponto WHERE data=? AND funcionario=?", (str(self.data_atu), self.funcionario_combo))
-            sla1=self.cursor.fetchone()
-            if sla1 is not None:
-                entri_manha,sai_manha,entri_tarde,sai_tarde=sla1
-                if entri_manha is not None:
-                    self.ehora_m_o.delete(0,END)
-                    self.ehora_m_o.insert(0,entri_manha)
-                if sai_manha is not None:
-                    self.shora_m_o.delete(0,END)
-                    self.shora_m_o.insert(0,sai_manha)
-                if entri_tarde is not None:
-                    self.ehora_t_o.delete(0,END)
-                    self.ehora_t_o.insert(0,entri_tarde)
-                if sai_tarde is not None:
-                    self.shora_t_o.delete(0,END)
-                    self.shora_t_o.insert(0,sai_tarde)
-            cont+=1
-            mes_fun=StringVar(value=cont)
-            mes_fun1=StringVar(value=cont)
-            mes_fun2=StringVar(value=cont)
-            mes_fun3=StringVar(value=cont)
-            y+=30
-        y=80
-        for _ in range(int((self.quantidade_de_dias)/2)):
-            dia_semana = calendar.weekday(int(self.ano),int(self.mes),int(cont))
-            cor=self.dias_da_semana_Cores[dia_semana]
-            dias=self.dias_da_semana[dia_semana]
-            if cont<=9:
-                self.data_atu=f"0{str(cont)}/{self.mes}/{self.ano}"
-                mes_fun4=StringVar(value=f"{cont} : {dias[0]}")
-            else:
-                self.data_atu=f"{str(cont)}/{self.mes}/{self.ano}"
-                mes_fun4=StringVar(value=f"{cont} : {dias[0]}")
-            self.ehora_m_o=Entry(self.ponto_2,textvariable=mes_fun,justify="center",font="arial 12 bold",bg=cor,fg="black",width=10)
-            self.ehora_m_o.place(x=2,y=y)
-            self.shora_m_o=Entry(self.ponto_2,textvariable=mes_fun1,justify="center",font="arial 12 bold",bg=cor,fg="black",width=10)
-            self.shora_m_o.place(x=99,y=y)
-            self.ehora_t_o=Entry(self.ponto_2,textvariable=mes_fun2,justify="center",font="arial 12 bold",bg=cor,fg="black",width=10)
-            self.ehora_t_o.place(x=197,y=y)
-            self.shora_t_o=Entry(self.ponto_2,textvariable=mes_fun3,justify="center",font="arial 12 bold",bg=cor,fg="black",width=10)
-            self.shora_t_o.place(x=296,y=y)
-            self.ale=Entry(self.ponto_2,textvariable=mes_fun4,font="arial 12 bold",bg=cor,fg="black",width=5)
-            self.ale.place(x=395,y=y)
-            self.cursor.execute("SELECT entri_manha, sai_manha, entri_tarde, sai_tarde FROM ponto WHERE data=? AND funcionario=?", (str(self.data_atu), self.funcionario_combo))
-            sla1=self.cursor.fetchone()
-            if sla1 is not None:
-                entri_manha,sai_manha,entri_tarde,sai_tarde=sla1
-                if entri_manha is not None:
-                    self.ehora_m_o.delete(0,END)
-                    self.ehora_m_o.insert(0,entri_manha)
-                if sai_manha is not None:
-                    self.shora_m_o.delete(0,END)
-                    self.shora_m_o.insert(0,sai_manha)
-                if entri_tarde is not None:
-                    self.ehora_t_o.delete(0,END)
-                    self.ehora_t_o.insert(0,entri_tarde)
-                if sai_tarde is not None:
-                    self.shora_t_o.delete(0,END)
-                    self.shora_t_o.insert(0,sai_tarde)
-            cont+=1
-            y+=30
-            mes_fun=StringVar(value=cont)
-            mes_fun1=StringVar(value=cont)
-            mes_fun2=StringVar(value=cont)
-            mes_fun3=StringVar(value=cont)
+                b.execute("SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque")
+
+            rows = b.fetchall()
+            self.clear_table()
+            for row in rows:
+                self.table.insert("", "end", text=row[0], values=(row[1], row[2], row[3]))
+
+        except sqlite3.Error as e:
+            print("Erro ao acessar o banco de dados:", e)
+
+        finally:
+            Banco.close()
+            
+    def clear_table(self):
+        for item in self.table.get_children():
+            self.table.delete(item)
         
-        self.combo_func.focus()
-    def calculo(self):
-        self.calculu_buton.destroy()
-        self.calculu_buton2.destroy()
-        self.calculu_buton3.destroy()
-        if self.quantidade_de_dias==30:
-            self.calculu_buton4.destroy()
-        self.br_holidays = holidays.BR()
-        self.sal=float(self.salario.get())
-        self.hr=float(self.horas_trabalhadas.get())
-        cont=0
-        horas_extras60=0
-        horas_extras110=0
-        folga_don=False
-        for _ in range(int(self.quantidade_de_dias+1)):
-            if cont<=9:
-                self.data_atu_m=f"0{str(cont)}/{self.mes}/{self.ano}"
-                self.data_atu_f=f"{self.ano}/{self.mes}/0{str(cont)}"
-            else:
-                self.data_atu_m=f"{str(cont)}/{self.mes}/{self.ano}"
-                self.data_atu_f=f"{self.ano}/{self.mes}/{str(cont)}"
-            self.cursor.execute("SELECT entri_manha, sai_manha, entri_tarde, sai_tarde,dia_semana FROM ponto WHERE data=? AND funcionario=?", (str(self.data_atu_m), self.funcionario_combo))
-            sla1=self.cursor.fetchone()
-            cont+=1           
-            if sla1 is not None :
-                entri_manha,sai_manha,entri_tarde,sai_tarde,dia_semana=sla1
-                
-                if entri_manha is not None and entri_manha not in("","F", "O", "L", "G"):
-                    ehorasm, eminutosm = entri_manha.split(":")
-                else:
-                    ehorasm, eminutosm = 0,0
-                if sai_manha is not None and sai_manha not in("","F", "O", "L", "G"):
-                    shorasm, sminutosm = sai_manha.split(":")
-                else:
-                    shorasm, sminutosm =0,0
-                if entri_tarde is not None and entri_tarde not in("","F", "O", "L", "G"):
-                    ehorast, eminutost = entri_tarde.split(":")
-                else:
-                    ehorast, eminutost =0,0
-                if sai_tarde is not None and sai_tarde not in("","F", "O", "L", "G"):
-                    shorast, sminutost = sai_tarde.split(":")
-                else:
-                    shorast, sminutost = 0,0
-
-                eminutos_totalm = float(ehorasm) * 60 + float(eminutosm)
-                sminutos_totalm = float(shorasm) * 60 + float(sminutosm)
-                eminutos_totalt = float(ehorast) * 60 + float(eminutost)
-                sminutos_totalt = float(shorast) * 60 + float(sminutost)
-
-                horas_d = (sminutos_totalm-eminutos_totalm)+(sminutos_totalt-eminutos_totalt)
-                    #self.br_holidays.get(self.data_atu_f)
-                seg_sabado= ("Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado")
-
-                if dia_semana in seg_sabado:
-                    if self.data_atu_f in self.br_holidays:
-                        horas_extras110+=horas_d
-                    else:
-                        horas_extras60_m = horas_d - 480 if horas_d > 480 else 0
-                elif dia_semana == "Domingo":
-                    if entri_manha == "F" and sai_manha == "O" and entri_tarde == "L" and sai_tarde == "G":
-                        folga_don=True
-                    else:
-                        horas_extras60_m = horas_d - 240 if horas_d > 240 else 0
-                else:
-                    horas_extras60_m = 0
-
-                if horas_extras60_m > 0:
-                    horas_extras60+=horas_extras60_m
-        if folga_don==False:
-            horas_extras110+=300
-            horas_extras60-=60
-        self.vlr_hr=self.sal/self.hr
-        vlr_hr_60=1.6*self.vlr_hr
-        vlr_hr_110=2.1*self.vlr_hr
-        self.txtx=Label(self.ponto,text=f"Horas extras 60% = {horas_extras60/60:.2f} : {(horas_extras60/60)*vlr_hr_60 :.2f} R$",fg="black",width=30,font="arial 12 bold",bg="#f0ea7f",bd=3)
-        self.txtx.place(x=70,y=10)
-        self.txtx=Label(self.ponto_2,text=f"Horas extras 110% = {horas_extras110/60:.2f} : {(horas_extras110/60)*vlr_hr_110 :.2f} R$",fg="black",width=30,font="arial 12 bold",bg="#f0ea7f",bd=3)
-        self.txtx.place(x=70,y=10)
-        cal = calendar.monthcalendar(int(self.ano),int( self.mes))
-        domingos = 0
-        feriados = 0
-        for semana in cal:
-            for dia in semana:
-                if dia != 0:
-                    data = date(int(self.ano),int( self.mes), dia)
-                    if data.weekday() == 6:  
-                        domingos += 1
-
-                    if data in self.br_holidays:
-                        feriados += 1
-
-        dias_inuteis=domingos+feriados
-        dias_uteis=self.quantidade_de_dias-dias_inuteis
-        
-        valor60=(horas_extras60/60) * vlr_hr_60
-        valor110=(horas_extras110/60) * vlr_hr_110
-        reflexos = (((horas_extras60/60) * vlr_hr_60) + ((horas_extras110/60) * vlr_hr_110)) / dias_uteis * dias_inuteis
-        self.txtx=Label(self.ponto_2,text=f"Reflexos de Horas extras  = {(((horas_extras60/60) * vlr_hr_60) + ((horas_extras110/60) * vlr_hr_110)) / dias_uteis :.2f} : {reflexos :.2f} R$",fg="black",width=40,font="arial 12 bold",bg="#f0ea7f",bd=3)
-        self.txtx.place(x=20,y=540)
-        if self.quantidade_de_dias==30:
-            self.txtx=Label(self.ponto,text=f"Reflexos de Horas extras  = {(((horas_extras60/60) * vlr_hr_60) + ((horas_extras110/60) * vlr_hr_110)) / dias_uteis :.2f} : {reflexos :.2f} R$",fg="black",width=40,font="arial 12 bold",bg="#f0ea7f",bd=3)
-            self.txtx.place(x=20,y=540)
-
-        self.fram_hole=LabelFrame(self.table_funcionarios,width=300,height=200,bg="#d5edce",bd=3)
-        self.fram_hole.place(x=945,y=380)
-        self.fram_hole1=LabelFrame(self.fram_hole,width=150,height=200,bg="#d5edce",bd=3)
-        self.fram_hole1.place(x=0,y=0)
-        self.fram_hole2=LabelFrame(self.fram_hole,width=150,height=200,bg="#d5edce",bd=3)
-        self.fram_hole2.place(x=150,y=0)
-        txtx_sla =Label(self.fram_hole1, text=f"Salario... Horas = ",  width=15, font="arial 10 bold", bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0, y=0)
-        txtx_sla=Label(self.fram_hole1,text=f"Extras 60% = ",width=15,font="arial 10 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0,y=25)
-        txtx_sla=Label(self.fram_hole1,text=f"Extras 110% = ",width=15,font="arial 10 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0,y=50)
-        txtx_sla=Label(self.fram_hole1,text=f"Reflexos Extras = ",width=15,font="arial 10 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0,y=75)
-        txtx_sla=Label(self.fram_hole1,text=f"INSS  = ",width=15,font="arial 10 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0,y=100)
-        txtx_sla=Label(self.fram_hole1,text=f"Salario - INSS =",width=12,font="arial 12 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0,y=150)
-        txtx_sla =Label(self.fram_hole2, text=f"{self.hr} Hrs | {self.sal} R$",  width=15, font="arial 10 bold", bg="#cde8c5",bd=3, )
-        txtx_sla.place(x=0, y=0)
-        txtx_sla=Label(self.fram_hole2,text=f"{horas_extras60/60:.2f} Hrs | {(horas_extras60/60)*vlr_hr_60 :.2f} R$",width=15,font="arial 10 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0,y=25)
-        txtx_sla=Label(self.fram_hole2,text=f"{horas_extras110/60:.2f} Hrs | {(horas_extras110/60)*vlr_hr_110 :.2f} R$",width=15,font="arial 10 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0,y=50)
-        txtx_sla=Label(self.fram_hole2,text=f"{(((horas_extras60/60) * vlr_hr_60) + ((horas_extras110/60) * vlr_hr_110)) / dias_uteis :.2f} Hrs | {reflexos :.2f} R$",width=15,font="arial 10 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0,y=75)
-        txtx_sla=Label(self.fram_hole2,text=f"  7.92 % | {(valor110+valor60+self.sal+reflexos)*(7.92/100):.2f} R$",width=15,font="arial 10 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=10,y=100)
-        txtx_sla=Label(self.fram_hole2,text=f"{(valor110+valor60+self.sal+reflexos)-((valor110+valor60+self.sal+reflexos)*(7.92/100)):.2f} R$",width=15,font="arial 12 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0,y=150)
-
-        
-        
-    def cliente(self):
-        img = PhotoImage(file="ImageTk/add_usu.png")
+    def Empresa(self):
         self.table_clientes = LabelFrame(
-            self.janela_usu, width=1250, height=640, bg="blue"
+            self.janela_usu, width=1250, height=640, bg="#666666"
         )
         self.table_clientes.place(x=(1550 - 1250)/2, y=205)
-        self.clientes_add = Button(
-            self.table_clientes, image=img, bd=0, compound=TOP,command=self.cadastro_cliente
-        )
-        self.clientes_add.place(x=1220, y=0)
-        self.table_itens_add.image = img
-
-        self.nome_cli_frame=Label(self.table_clientes,font="Arial 12 bold",text="Nome Cliente",bd=0,bg="cyan",foreground="black")
-        self.nome_cli_frame.place(x=255,y=5)
-        self.nome_clie_freme_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=85)
-        self.nome_clie_freme_entry.bind("<Return>",lambda event:self.vazio_nome_cli())
-        self.nome_clie_freme_entry.place(x=5,y=25,height=20)
-
-
-        self.nome_func_frame=Label(self.table_clientes,font="Arial 12 bold",text="Nome Funcionario",bd=0,bg="cyan",foreground="black")
-        self.nome_func_frame.place(x=855,y=5)
-        self.nome_func_frame_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=85)
-        self.nome_func_frame_entry.bind("<Return>",lambda event:self.vazio_nome_func())
-        self.nome_func_frame_entry.place(x=610,y=25,height=20)
-
         
-        img = PhotoImage(file="ImageTk/pesquisa_cli.png")
-        self.pesquisa_func=Button(self.table_clientes, image=img, bd=0, compound=TOP,command=self.cadastro_cliente)
-        self.pesquisa_func.place(x=1183,y=50)
-        self.pesquisa_cli=Button(self.table_clientes, image=img, bd=0, compound=TOP,command=self.cadastro_cliente)
-        self.pesquisa_cli.place(x=578,y=50)
-        
-        self.nome_clie_freme_entry.focus()
+        Banco = sqlite3.connect("banco.db")
+        b = Banco.cursor()  
+        b.execute("SELECT nome FROM empresa ")
+        nome_empre = b.fetchall()
+        self.nome_empre=Label(self.table_clientes,font="Arial 12 bold",text="Nome :",bd=0,bg="#666666",foreground="black")
+        self.nome_empre.place(x=2,y=0)
+        self.nome_empre_entry=ttk.Combobox(self.table_clientes,font="Arial 10 bold",foreground="black",width=50,height=20)
+        self.nome_empre_entry["values"] = nome_empre
+        self.nome_empre_entry.bind("<Return>",lambda event:self.caminha_nome())
+        self.nome_empre_entry.bind("<<ComboboxSelected>>",lambda event:self.caminha_nome())
+        self.nome_empre_entry.place(x=2,y=20)
+        self.nome_empre_entry.focus()
+        self.Email=Label(self.table_clientes,font="Arial 12 bold",text="Gmail :",bd=0,bg="#666666",foreground="black")
+        self.Email.place(x=400,y=0)
+        self.Email_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=50)
+        self.Email_entry.bind("<Return>",lambda event:self.Celular_entry.focus())
+        self.Email_entry.place(x=400,y=20,height=20)
+        self.Celular=Label(self.table_clientes,font="Arial 12 bold",text="Celular :",bd=0,bg="#666666",foreground="black")
+        self.Celular.place(x=800,y=0)
+        self.Celular_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=25)
+        self.Celular_entry.bind("<Return>",lambda event:self.caminha_cell())
+        self.Celular_entry.place(x=800,y=20,height=20)
+        self.CNPJ=Label(self.table_clientes,font="Arial 12 bold",text="C.N.P.J :",bd=0,bg="#666666",foreground="black")
+        self.CNPJ.place(x=2,y=50)
+        self.CNPJ_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=30)
+        self.CNPJ_entry.bind("<Return>",lambda event:self.caminha_cnpf())
+        self.CNPJ_entry.place(x=2,y=70,height=20)
+        self.IE=Label(self.table_clientes,font="Arial 12 bold",text="Inscr. Estadual :",bd=0,bg="#666666",foreground="black")
+        self.IE.place(x=300,y=50)
+        self.IE_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=25)
+        self.IE_entry.bind("<Return>",lambda event:self.Endere_entry.focus())
+        self.IE_entry.place(x=300,y=70,height=20)
 
+        self.pix_amar = StringVar(value="vazio")
+        self.br=Label(self.table_clientes, bg="#666666",text="Chave pix:",font="Arial 12 bold",width=25,bd=0,fg="black")
+        self.br.place(x=650,y=50)
+        self.A=Radiobutton(self.table_clientes,font="Arial 12 bold",variable=self.pix_amar,value="CPF/CNPJ",text="CPF/CNPJ",bg="#666666",bd=1,fg="black")
+        self.A.place(x=550,y=70)
+        self.B=Radiobutton(self.table_clientes,font="Arial 12 bold",variable=self.pix_amar,value="TELEFONE",text="TELEFONE",bg="#666666",bd=1,fg="black")
+        self.B.place(x=750,y=70)
+        self.C=Radiobutton(self.table_clientes,font="Arial 12 bold",variable=self.pix_amar,value="GMAIL",text="GMAIL",bg="#666666",bd=1,fg="black")
+        self.C.place(x=950,y=70)
+
+        self.Endere=Label(self.table_clientes,font="Arial 12 bold",text="Endereço :",bd=0,bg="#666666",foreground="black")
+        self.Endere.place(x=2,y=100)
+        self.Endere_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=35)
+        self.Endere_entry.bind("<Return>",lambda event:self.nu_end_entry.focus())
+        self.Endere_entry.place(x=2,y=120,height=20)
+        self.nu_end=Label(self.table_clientes,font="Arial 12 bold",text="N° :",bd=0,bg="#666666",foreground="black")
+        self.nu_end.place(x=300,y=100)
+        self.nu_end_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=5)
+        self.nu_end_entry.bind("<Return>",lambda event:self.Bairro_entry.focus())
+        self.nu_end_entry.place(x=300,y=120,height=20)
+        self.Bairro=Label(self.table_clientes,font="Arial 12 bold",text="Bairro :",bd=0,bg="#666666",foreground="black")
+        self.Bairro.place(x=400,y=100)
+        self.Bairro_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=25)
+        self.Bairro_entry.bind("<Return>",lambda event:self.Comple_entry.focus())
+        self.Bairro_entry.place(x=400,y=120,height=20)
+        self.Comple=Label(self.table_clientes,font="Arial 12 bold",text="Complemento :",bd=0,bg="#666666",foreground="black")
+        self.Comple.place(x=650,y=100)
+        self.Comple_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=25)
+        self.Comple_entry.bind("<Return>",lambda event:self.estado_entry.focus())
+        self.Comple_entry.place(x=650,y=120,height=20)
+        self.estado=Label(self.table_clientes,font="Arial 12 bold",text="Estado :",bd=0,bg="#666666",foreground="black")
+        self.estado.place(x=2,y=150)
+        self.estado_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=25)
+        self.estado_entry.bind("<Return>",lambda event:self.city_entry.focus())
+        self.estado_entry.place(x=2,y=170,height=20)
+        self.city=Label(self.table_clientes,font="Arial 12 bold",text="Cidade :",bd=0,bg="#666666",foreground="black")
+        self.city.place(x=250,y=150)
+        self.city_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=25)
+        self.city_entry.bind("<Return>",lambda event:self.Cep_entry.focus())
+        self.city_entry.place(x=250,y=170,height=20)
+        self.Cep=Label(self.table_clientes,font="Arial 12 bold",text="Cep :",bd=0,bg="#666666",foreground="black")
+        self.Cep.place(x=500,y=150)
+        self.Cep_entry=Entry(self.table_clientes,font="Arial 10 bold",bd=1,foreground="black",width=25)
+        self.Cep_entry.bind("<Return>",lambda event:self.caminha_cep())
+        self.Cep_entry.place(x=500,y=170,height=20)
+        Button(self.table_clientes, font="Arial 12 bold",text="Salvar",command=self.salvar, bd=3,fg="black",bg="#666666").place(x=750, y=190)
         if self.table_itens.winfo_exists:
             self.table_itens.place_forget()
-        if self.table_pedidos.winfo_exists:
-            self.table_pedidos.place_forget()
         if self.table_vendas.winfo_exists:
             self.table_vendas.place_forget()
-        if self.table_funcionarios.winfo_exists:
-            self.table_funcionarios.place_forget()
-
-    def vazio_nome_cli(Self):
-        nome_clie=Self.nome_clie_freme_entry.get()
-        if nome_clie=="":
-            Self.nome_func_frame_entry.focus()
-        else:
-            messagebox.showinfo("atoa")
-
-    def vazio_nome_func(Self):
-        nome_fun=Self.nome_func_frame_entry.get()
-        if nome_fun=="":
-            Self.nome_clie_freme_entry.focus()
-        else:
-            messagebox.showinfo("atoa")
-
-    def cadastro_cliente(self):
-        self.frame_cli=LabelFrame(self.table_clientes,bd=1,bg="cyan",width=1200,height=800)
-        self.frame_cli.place(x=5,y=0)
-        self.nome_cli=Label(self.frame_cli,font="Arial 12 bold",text="Nome",bd=0,bg="cyan",foreground="black")
-        self.nome_cli.place(x=0,y=0)
-        self.tell_clie=Label(self.frame_cli,font="Arial 12 bold",text="N° Celular",bd=0,bg="cyan",foreground="black")
-        self.tell_clie.place(x=200,y=0)
-        self.gmail_clie=Label(self.frame_cli,font="Arial 12 bold",text="Gmail",bd=0,bg="cyan",foreground="black")
-        self.gmail_clie.place(x=300,y=0)
-        self.nome_fantazia_clie=Label(self.frame_cli,font="Arial 12 bold",text="Apelido",bd=0,bg="cyan",foreground="black")
-        self.nome_fantazia_clie.place(x=550,y=0)
-        self.cpf_clie=Label(self.frame_cli,font="Arial 12 bold",text="CPF",bd=0,bg="cyan",foreground="black")
-        self.cpf_clie.place(x=700,y=0)
-        self.rg_clie=Label(self.frame_cli,font="Arial 12 bold",text="RG",bd=0,bg="cyan",foreground="black")
-        self.rg_clie.place(x=850,y=0)
-        self.ou_clie=Label(self.frame_cli,font="Arial 12 bold",text="Ou",bd=0,bg="cyan",foreground="black")
-        self.ou_clie.place(x=950,y=0)
-        self.cnpj_clie=Label(self.frame_cli,font="Arial 12 bold",text="CNPJ",bd=0,bg="cyan",foreground="black")
-        self.cnpj_clie.place(x=1000,y=0)
-        self.nome_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=25)
-        self.nome_clie_entry.bind("<Return>",lambda event:self.tell_clie_entry.focus())
-        self.nome_clie_entry.place(x=0,y=20,height=20)
-        self.tell_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=13)
-        self.tell_clie_entry.bind("<Return>",lambda event:self.gmail_clie_entry.focus())
-        self.tell_clie_entry.place(x=200,y=20,height=20)
-        self.gmail_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=30)
-        self.gmail_clie_entry.bind("<Return>",lambda event:self.nome_fake_clie_entry.focus())
-        self.gmail_clie_entry.place(x=300,y=20,height=20)
-        self.nome_fake_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=20)
-        self.nome_fake_clie_entry.bind("<Return>",lambda event:self.cpf_clie_entry.focus())
-        self.nome_fake_clie_entry.place(x=550,y=20,height=20)
-        self.cpf_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=20)
-        self.cpf_clie_entry.bind("<Return>",lambda event:self.rg_clie_entry.focus())
-        self.cpf_clie_entry.place(x=700,y=20,height=20)
-        self.rg_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=20)
-        self.rg_clie_entry.bind("<Return>",lambda event:self.cnpj_clie_entry.focus())
-        self.rg_clie_entry.place(x=850,y=20,height=20)
-        self.cnpj_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=25)
-        self.cnpj_clie_entry.bind("<Return>",lambda event:self.Bairro_clie_entry.focus())
-        self.cnpj_clie_entry.place(x=1000,y=20,height=20)
-        self.endereço_cli=Label(self.frame_cli,font="Arial 15 bold",text="Endereço",bd=0,bg="cyan",foreground="black")
-        self.endereço_cli.place(x=0,y=50)
-        self.Bairro_clie=Label(self.frame_cli,font="Arial 12 bold",text="Bairro",bd=0,bg="cyan",foreground="black")
-        self.Bairro_clie.place(x=0,y=80)
-        self.Rua_clie=Label(self.frame_cli,font="Arial 12 bold",text="Rua",bd=0,bg="cyan",foreground="black")
-        self.Rua_clie.place(x=300,y=80)
-        self.N_casa_clie=Label(self.frame_cli,font="Arial 12 bold",text="N° Casa",bd=0,bg="cyan",foreground="black")
-        self.N_casa_clie.place(x=600,y=80)
-        self.complemento_clie=Label(self.frame_cli,font="Arial 12 bold",text="Complemento",bd=0,bg="cyan",foreground="black")
-        self.complemento_clie.place(x=700,y=80)       
-        self.Bairro_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=30)
-        self.Bairro_clie_entry.bind("<Return>",lambda event:self.Rua_clie_entry.focus())
-        self.Bairro_clie_entry.place(x=0,y=100,height=20)
-        self.Rua_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=30)
-        self.Rua_clie_entry.bind("<Return>",lambda event:self.N_cs_clie_entry.focus())
-        self.Rua_clie_entry.place(x=300,y=100,height=20)
-        self.N_cs_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=10)
-        self.N_cs_clie_entry.bind("<Return>",lambda event:self.Complemento_clie_entry.focus())
-        self.N_cs_clie_entry.place(x=600,y=100,height=20)
-        self.Complemento_clie_entry=Entry(self.frame_cli,font="Arial 10 bold",bd=1,foreground="black",width=50)
-        self.Complemento_clie_entry.bind("<Return>",lambda event:self.add_cli.focus())
-        self.Complemento_clie_entry.place(x=700,y=100,height=20)
-
-        self.add_cli=Button(self.frame_cli,font="Arial 12 bold",text="Novo Cliente",bg="black",command=self.banco_cliente,foreground="white",bd=1)
-        self.add_cli.bind("<Return>",lambda event:self.banco_cliente())
-        self.add_cli.bind("<Right>",lambda event:self.add_func.focus())
-        self.add_cli.bind("<Left>",lambda event:self.nome_clie_entry.focus())
-        self.add_cli.place(x=700,y=150)
-        self.add_func=Button(self.frame_cli,font="Arial 12 bold",text="Novo Funcionario",bg="black",foreground="white",bd=1)
-        self.add_func.bind("<Return>",lambda event:self.tell_clie_entry.focus())
-        self.add_func.bind("<Right>",lambda event:self.voltar_cli.focus())
-        self.add_func.bind("<Left>",lambda event:self.add_cli.focus())
-        self.add_func.place(x=850,y=150)
-        self.voltar_cli=Button(self.frame_cli,font="Arial 12 bold",text="Voltar",bg="black",command=self.volta_clie,foreground="white",bd=1)
-        self.voltar_cli.bind("<Return>",lambda event:self.volta_clie())
-        self.voltar_cli.bind("<Left>",lambda event:self.add_func.focus())
-        self.voltar_cli.place(x=1050,y=150)
-
-        self.nome_clie_entry.focus()
-
-    def volta_clie(self):
-        self.frame_cli.place_forget()
-
-    def banco_cliente(self):
-        self.nome=self.nome_clie_entry.get()
-        self.tell=self.tell_clie_entry.get().replace(".","").replace("-","").replace("(","").replace(")","")
-        self.gmail=self.gmail_clie_entry.get()
-        self.nome_fake=self.nome_fake_clie_entry.get()
-        self.cpf=self.cpf_clie_entry.get().replace(".","").replace("-","")
-        self.rg=self.rg_clie_entry.get().replace(".","")
-        self.cnpj=self.cnpj_clie_entry.get().replace(".","")
-        self.bairro=self.Bairro_clie_entry.get()
-        self.rua=self.Rua_clie_entry.get()
-        self.n_cs=self.N_cs_clie_entry.get()
-        self.complemento=self.Complemento_clie_entry.get()
+    def caminha_nome(self):
+        nome=self.nome_empre_entry.get()
         Banco = sqlite3.connect("banco.db")
         b = Banco.cursor()
-        b.execute("SELECT cpf FROM Pessoas WHERE cpf=?",(self.cpf,))
-        cpf=b.fetchall()
-        if self.nome== "" or self.tell =="" or self.gmail == "" or self.bairro== "" or self.rua == "" or self.cpf=="" or self.rg =="": 
-            messagebox.showinfo("Erro","Campo Vazio")
-            self.nome_clie_entry.focus()
-        else:
-            if len(cpf)>=1:
-                messagebox.showerror("erro","Cpf ja cadastrado")
-                self.cpf_clie_entry.focus()                
-            else:
-                b.execute("INSERT INTO Pessoas (nome,tell,gmail,nome_fake,cpf,rg,cnpj,bairro,rua,n_cs,complemento) VALUES (?, ?, ?,?,?,?,?,?,?,?,?);",(self.nome,self.tell,self.gmail,self.nome_fake,self.cpf,self.rg,self.cnpj,self.bairro,self.rua,self.n_cs,self.complemento,))
-                Banco.commit()    
-                messagebox.showinfo("Sucesso","Cliente cadastrado com sucesso")
-                self.limpa_entrys_clie()
-    def limpa_entrys_clie(self):
-        self.nome_clie_entry.delete(0,END)
-        self.tell_clie_entry.delete(0,END)
-        self.gmail_clie_entry.delete(0,END)
-        self.nome_fake_clie_entry.delete(0,END)
-        self.cpf_clie_entry.delete(0,END)
-        self.rg_clie_entry.delete(0,END)
-        self.cnpj_clie_entry.delete(0,END)
-        self.Bairro_clie_entry.delete(0,END)
-        self.Rua_clie_entry.delete(0,END)
-        self.N_cs_clie_entry.delete(0,END)
-        self.Complemento_clie_entry.delete(0,END) 
-        self.nome_clie_entry.focus() 
+        if nome:
+            b.execute("SELECT * FROM empresa WHERE nome=?", (nome,))
+            valor = b.fetchall()
+            if valor:
+                messagebox.showinfo("Existe","Usuario ja existente...")
+                self.inseri(valor)
+            self.Email_entry.focus()    
+    def caminha_cnpf(self):
+        if not self.so_numero():
+            cnpj=self.CNPJ_entry.get()
+            Banco = sqlite3.connect("banco.db")
+            b = Banco.cursor()
+            if cnpj:
+                b.execute("SELECT * FROM empresa WHERE cnpj=?", (cnpj,))
+                valor = b.fetchall()
+                if valor:
+                    messagebox.showinfo("Existe","CNPJ ja existente...")
+                    self.inseri(valor)
+                self.IE_entry.focus()
+    def caminha_cell(self):
+        if not self.so_numero():
+            self.CNPJ_entry.focus()
+    def caminha_cep(self):
+        if not self.so_numero():
+            self.salvar()      
+    def so_numero(self):
+        tell=self.Celular_entry.get().isalpha()
+        cnpj=self.CNPJ_entry.get().isalpha()
+        cep=self.Celular_entry.get().isalpha()
+        if tell or cnpj or cep:
+            messagebox.showerror("Error numerico","Digite apenas numeros !!!")
+            return True
+    def inseri(self,valor):
+        name,gmail,cell,cnpj_,ieeee,pix,endereço,nu_ende,bairro,complemento,estado,cidade,cep=valor[0]
+        self.nome_empre_entry.delete(0,END)
+        self.Email_entry.delete(0,END)
+        self.Celular_entry.delete(0,END)
+        self.CNPJ_entry.delete(0,END)
+        self.IE_entry.delete(0,END)
+        self.Endere_entry.delete(0,END)
+        self.nu_end_entry.delete(0,END)
+        self.Bairro_entry.delete(0,END)
+        self.Comple_entry.delete(0,END)
+        self.estado_entry.delete(0,END)
+        self.city_entry.delete(0,END)
+        self.Cep_entry.delete(0,END)
+        self.nome_empre_entry.insert(END,name)
+        self.Email_entry.insert(END,gmail)
+        self.Celular_entry.insert(END,cell)
+        self.CNPJ_entry.insert(END,cnpj_)
+        self.IE_entry.insert(END,ieeee)
+        self.Endere_entry.insert(END,endereço)
+        self.nu_end_entry.insert(END,nu_ende)
+        self.Bairro_entry.insert(END,bairro)
+        self.Comple_entry.insert(END,complemento)
+        self.estado_entry.insert(END,estado)
+        self.city_entry.insert(END,cidade)
+        self.Cep_entry.insert(END,cep)
+        self.pix_amar.set(pix)
+        self.Email_entry.focus()
 
+    def salvar(self):
+        nome=self.nome_empre_entry.get()
+        gmail=self.Email_entry.get()
+        cell=self.Celular_entry.get()
+        cnpj=self.CNPJ_entry.get()
+        ieeee=self.IE_entry.get()
+        pix=self.pix_amar.get()
+        endereço=self.Endere_entry.get()
+        nu_ende=self.nu_end_entry.get()
+        bairro=self.Bairro_entry.get()
+        complemento=self.Comple_entry.get()
+        estado=self.estado_entry.get()
+        cidade=self.city_entry.get()
+        cep=self.Cep_entry.get()
+        Banco = sqlite3.connect("banco.db")
+        b = Banco.cursor()    
+        b.execute("SELECT * FROM empresa WHERE nome=?", (nome,))
+        verifica_nome = b.fetchall()
+        b.execute("SELECT * FROM empresa WHERE cnpj=?", (cnpj,))
+        verifica_cnpj = b.fetchall()
+        if nome!="" and gmail!="" and cell!="" and cnpj!="" and ieeee!="" and pix !="vazio" and endereço!="" and nu_ende!="" and bairro!="" and estado!="" and cidade!="" and cep!="" :
+            if not verifica_cnpj and not verifica_nome:
+                query = "INSERT INTO empresa (nome,gmail,cell,cnpj,iee,pix,endereco,nu_endereco,bairro,complemento,estado,cidade,cep) VALUES (?, ?, ?, ?, ?,?,?,?,?,?,?,?,?)"
+                values = (nome,gmail,cell,cnpj,ieeee,pix,endereço,nu_ende,bairro,complemento,estado,cidade,cep)
+                b.execute(query,values)
+                Banco.commit()
+                messagebox.showinfo("Cadastro","Cadastro realizado com sucesso!!!")
+            else:
+                if messagebox.askyesno("Aviso","Deseja atualizalo ?"):
+                    query = "UPDATE empresa SET nome=?, gmail=?, cell=?, cnpj=?, iee=?, pix=?, endereco=?, nu_endereco=?, bairro=?, complemento=?, estado=?, cidade=?, cep=?"
+                    values = (nome,gmail,cell,cnpj,ieeee,pix,endereço,nu_ende,bairro,complemento,estado,cidade,cep)
+                    b.execute(query,values)
+                    Banco.commit()
+                    messagebox.showinfo("Atualização","Cadastro atualizado com sucesso!!!") 
+        else:
+            messagebox.showerror("Vazio","Preencha todos os campos")
     def vendas(self):
         img = PhotoImage(file="ImageTk/confg.png")
         self.table_vendas = LabelFrame(
@@ -941,12 +443,8 @@ class Admin:
         self.table_itens_add.image = img
         if self.table_itens.winfo_exists:
             self.table_itens.place_forget()
-        if self.table_pedidos.winfo_exists:
-            self.table_pedidos.place_forget()
         if self.table_clientes.winfo_exists:
             self.table_clientes.place_forget()
-        if self.table_funcionarios.winfo_exists:
-            self.table_funcionarios.place_forget()
 
     def edt(self):
         self.edts = LabelFrame(self.table_itens, width=1200, height=800, bg="black")

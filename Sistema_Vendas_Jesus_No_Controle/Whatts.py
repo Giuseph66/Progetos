@@ -154,10 +154,12 @@ class bomb():
         Banco.close()
         self.msm.delete(0,END)
     def inicia(self):
-        self.Serv= Service(ChromeDriverManager().install())
-        self.nav=webdriver.Chrome(service=self.Serv)
-        self.nav.get("https://web.whatsapp.com")
-
+        try:
+            self.Serv = Service(ChromeDriverManager().install())
+            self.nav = webdriver.Chrome(service=self.Serv)
+            self.nav.get("https://web.whatsapp.com")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Erro ao iniciar o WebDriver: {e}")
     def continua_whatts(self):
         self.lista_ctt=self.dados
         qntd_cnts=len(self.lista_ctt)

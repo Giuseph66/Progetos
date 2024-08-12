@@ -5,22 +5,22 @@ from tkinter import Label, ttk, messagebox
 from tkinter import *
 from fechamento_cx import F_caixa
 from mesas import *
+import random
 
 
 class caixa(F_caixa, mes_geral):
-    def principal_frame(self):
+    def principal_frame(self,id_venda):
+        self.id_venda_mesa=id_venda
         self.janela_principal.iconbitmap("ImageTk/logo.ico"
         )
         self.janela_principal.title("Caixa")
-        self.caixa_frame = Frame(
-            self.janela_principal, width=1800, height=800, bg="#616161"
-        )
+        self.caixa_frame = Canvas(self.janela_principal, width=1800, height=1000, bg='black')
         self.caixa_frame.place(x=0, y=0)
 
         Banco = sqlite3.connect("banco.db")
         b = Banco.cursor()
 
-        self.frame_gera = LabelFrame(self.caixa_frame, width=800, height=800,bd=3, bg="#616161",highlightbackground="white")
+        self.frame_gera = Canvas(self.caixa_frame, width=800, height=800,bd=0, bg="black",highlightbackground="white")
         self.frame_gera.place(x=700, y=0)
 
         b.execute("SELECT nome FROM Pessoas")
@@ -35,15 +35,24 @@ class caixa(F_caixa, mes_geral):
         )
         self.amostra_itens.configure(highlightbackground="#c4c2c2")
         self.amostra_itens.place(x=0, y=50)
-
-        b.execute("SELECT Cliente FROM Venda ORDER BY Id DESC LIMIT 1")
-        cliente = b.fetchone()
+        if id_venda is None:
+            b.execute("SELECT Cliente FROM Venda ORDER BY Id DESC LIMIT 1")
+            cliente = b.fetchone()
+            b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
+            resulta = b.fetchone()
+            resulta = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(resulta)).replace(",", "")
+            if resulta is not None:
+                Nu = resulta
+        else:
+            b.execute('SELECT Cliente FROM Venda WHERE Id=?',(id_venda,))
+            cliente=b.fetchone()
+            Nu=id_venda
 
         self.def_cliente_texto = Label(
             self.frame_gera,
             text="Cliente:",
             font="Arial 12",
-            bg="#616161",
+            bg="black",
             foreground="white",
         )
         self.def_cliente_texto.place(x=0, y=2)
@@ -59,19 +68,14 @@ class caixa(F_caixa, mes_geral):
         )
         self.def_cliente_digito.place(x=60, y=2)
 
-        self.chekin_test=Checkbutton(self.frame_gera,text="ADM",bg="#616161",command=self.ADM)
+        self.chekin_test=Checkbutton(self.frame_gera,text="ADM",bg="black",foreground="white",command=self.ADM)
         self.chekin_test.place(x=200,y=25)
-        b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
-        resulta = b.fetchone()
-        resulta = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(resulta)).replace(",", "")
-        if resulta is not None:
-            Nu = resulta
 
         self.numero_venda_texto = Label(
             self.frame_gera,
             font="Arial 12 ",
             text=f"Venda N°:{Nu}",
-            bg="#616161",
+            bg="black",
             foreground="white",
         )
         self.numero_venda_texto.place(x=0, y=25)
@@ -148,11 +152,23 @@ class caixa(F_caixa, mes_geral):
             foreground="black",
         )
         self.mesas_aberta_bu.place(x=10, y=20, height=25)
+        
+        self.frame_insert = Canvas(
+            self.frame_gera, width=500, bd=0, height=200, bg="black"
+        )
+        self.frame_insert.place(x=0, y=555)
+        for _ in range(random.randint(100,1000)):
+            x = random.randint(0, 1800)
+            y = random.randint(0, 1000)
+            tamanho = random.uniform(0.5, 3)
+            self.caixa_frame.create_oval(x, y, x + tamanho, y + tamanho, fill='white', outline='white')
+            self.frame_gera.create_oval(x, y, x + tamanho, y + tamanho, fill='white', outline='white')
+            self.frame_insert.create_oval(x, y, x + tamanho, y + tamanho, fill='white', outline='white')
 
         self.inserir_dados()
     
     def ADM (self):
-        self.adm_frame=LabelFrame(self.frame_gera,height=25,width=100,bg="#616161")
+        self.adm_frame=LabelFrame(self.frame_gera,height=25,width=100,bg="black")
         self.adm_frame.place(x=250,y=25)
 
         self.adm_senha=Entry(self.adm_frame,font="Arial 12 bold")
@@ -179,9 +195,12 @@ class caixa(F_caixa, mes_geral):
         self.vlr_antt = 00, 00
         self.vlr_ant = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(self.vlr_antt))
 
-        b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
-        Id_venda = b.fetchall()
-        Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        if self.id_venda_mesa is None:
+            b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
+            Id_venda = b.fetchall()
+            Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        else:
+            Id_venda=self.id_venda_mesa
 
         b.execute(
             "SELECT cdg,PRODUTO, Quantidade,PREÇO,Preco_quant FROM vendas_dados WHERE Id_venda=?",
@@ -202,7 +221,7 @@ class caixa(F_caixa, mes_geral):
                 self.frame_item,
                 text=f"({cdg})",
                 font="Arial 14 ",
-                width=25,
+                width=35,
                 bd=0,
                 height=45,
                 bg="#c4c2c2",
@@ -220,7 +239,7 @@ class caixa(F_caixa, mes_geral):
                 bg="#c4c2c2",
                 foreground="black",
             )
-            self.resu_nome.place(x=25, y=2)
+            self.resu_nome.place(x=40, y=2)
 
             self.resu_valor = LabelFrame(
                 self.frame_item,
@@ -278,7 +297,7 @@ class caixa(F_caixa, mes_geral):
             width=300,
             height=100,
             bd=2,
-            bg="#616161",
+            bg="black",
             foreground="#48ff00",
         )
         self.calc_item_total_cx.place(x=500, y=555)
@@ -290,7 +309,7 @@ class caixa(F_caixa, mes_geral):
             width=290,
             height=60,
             bd=0,
-            bg="#616161",
+            bg="black",
             foreground="#48ff00",
         )
         self.calc_item_total.pack(side=TOP)
@@ -307,10 +326,12 @@ class caixa(F_caixa, mes_geral):
             qntde = 1
         else:
             self.qntd_insert_digt.focus()
-
-        b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
-        Id_venda = b.fetchone()[0]
-        Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        if self.id_venda_mesa is None:
+            b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
+            Id_venda = b.fetchone()[0]
+            Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        else:
+            Id_venda=self.id_venda_mesa
 
         self.conn = sqlite3.connect("banco.db")
         self.cur = self.conn.cursor()
@@ -362,7 +383,7 @@ class caixa(F_caixa, mes_geral):
                     self.frame_item,
                     text=f"({self.cdg_insert_digt.get()})",
                     font="Arial 14 ",
-                    width=25,
+                    width=35,
                     bd=0,
                     height=45,
                     bg="#c4c2c2",
@@ -380,7 +401,7 @@ class caixa(F_caixa, mes_geral):
                     bg="#c4c2c2",
                     foreground="black",
                 )
-                self.resu_nome.place(x=25, y=2)
+                self.resu_nome.place(x=40, y=2)
 
                 self.resu_valor = LabelFrame(
                     self.frame_item,
@@ -448,7 +469,7 @@ class caixa(F_caixa, mes_geral):
             width=300,
             height=100,
             bd=2,
-            bg="#616161",
+            bg="black",
             foreground="#48ff00",
         )
         self.calc_item_total_cx.place(x=500, y=555)
@@ -460,7 +481,7 @@ class caixa(F_caixa, mes_geral):
             width=290,
             height=60,
             bd=0,
-            bg="#616161",
+            bg="black",
             foreground="#48ff00",
         )
         self.calc_item_total.pack(side=TOP)
@@ -469,24 +490,20 @@ class caixa(F_caixa, mes_geral):
 
     def inserir_dados(self):
         self.qntd_base = StringVar(value="1")
-        self.frame_insert = LabelFrame(
-            self.frame_gera, width=500, bd=2, height=200, bg="#616161"
-        )
-        self.frame_insert.place(x=0, y=555)
-
         self.cdg_insert = Label(
             self.frame_insert,
             text="Codigo:",
             font="Arial 12",
-            bg="#616161",
+            bg="black",
             foreground="white",
         )
         self.cdg_insert.place(x=0, y=0)
 
         self.cdg_insert_digt = Entry(self.frame_insert, width=25, bg="white", bd=1)
         self.cdg_insert_digt.bind(
-            "<Return>", lambda event: self.ex_item(self.cdg_insert_digt.get())
+            "<KeyRelease>", lambda event: self.ex_item(self.cdg_insert_digt.get())
         )
+        self.cdg_insert_digt.bind("<Return>", lambda event: self.verifica_existe(self.cdg_insert_digt.get()))
         self.cdg_insert_digt.bind("<KeyPress-s>", lambda event: self.exit())
         self.cdg_insert_digt.bind("<KeyPress-a>", lambda event: self.mesa_base())
         self.cdg_insert_digt.bind("<KeyPress-v>", lambda event: self.voltar_usu())
@@ -499,7 +516,7 @@ class caixa(F_caixa, mes_geral):
             self.frame_insert,
             text="Quantidade:",
             font="Arial 12",
-            bg="#616161",
+            bg="black",
             foreground="white",
         )
         self.qntd_insert.place(x=200, y=0)
@@ -521,9 +538,13 @@ class caixa(F_caixa, mes_geral):
         Banco = sqlite3.connect("banco.db")
         b = Banco.cursor()
 
-        b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
-        Id_venda = b.fetchone()[0]
-        Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        
+        if self.id_venda_mesa is None:
+            b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
+            Id_venda = b.fetchone()[0]
+            Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        else:
+            Id_venda=self.id_venda_mesa
         b.execute(
             "DELETE FROM vendas_dados WHERE Id_venda=? AND Quantidade=?", (Id_venda, 0)
         )
@@ -532,43 +553,41 @@ class caixa(F_caixa, mes_geral):
         self.Atualiza_caixa()
 
     def ex_item(self, codigo):
-        self.qntd_insert_digt.focus()
-
         self.print_frame_nome = LabelFrame(
             self.frame_insert,
-            text="Nome",
+            text="Produto :",
             font="Arial 18 ",
             width=490,
             bd=0,
             height=45,
-            bg="#616161",
+            bg="black",
             foreground="white",
         )
-        self.print_frame_nome.place(x=2, y=55)
+        self.print_frame_nome.place(x=2, y=60)
 
         self.print_frame_valor = LabelFrame(
             self.frame_insert,
-            text="Valor",
+            text="Valor :",
             font="Arial 18 ",
             width=240,
             bd=0,
             height=45,
-            bg="#616161",
+            bg="black",
             foreground="white",
         )
-        self.print_frame_valor.place(x=150, y=105)
+        self.print_frame_valor.place(x=150, y=110)
 
         self.print_frame_qntd = LabelFrame(
             self.frame_insert,
-            text="Qtde",
+            text="Qtde :",
             font="Arial 18 ",
             width=140,
             bd=0,
             height=25,
-            bg="#616161",
+            bg="black",
             foreground="white",
         )
-        self.print_frame_qntd.place(x=300, y=155)
+        self.print_frame_qntd.place(x=300, y=160)
 
         Banco = sqlite3.connect("banco.db")
         b = Banco.cursor()
@@ -577,16 +596,24 @@ class caixa(F_caixa, mes_geral):
         result = b.fetchone()
         if result is not None:
             nome, valor, qtde = result
-            self.print_frame_nome.config(text=f"Produto= {nome}")
-            self.print_frame_valor.config(text=f"Valor= {valor} R$")
-            self.print_frame_qntd.config(text=f"Qtde= {qtde}")
-        else:
+            self.print_frame_nome.config(text=f"Produto : {nome}")
+            self.print_frame_valor.config(text=f"Valor : {valor} R$")
+            self.print_frame_qntd.config(text=f"Qtde : {qtde}")
+    def verifica_existe(self,codigo):
+        Banco = sqlite3.connect("banco.db")
+        b = Banco.cursor()
+        b.execute("SELECT PRODUTO, PREÇO, QTDE FROM Estoque WHERE Codigo=?", (codigo,))
+        result = b.fetchone()
+        if result is None:
             messagebox.showinfo("Erro", "Produto nao encontrado")
             self.limpa_entrys()
             self.cdg_insert_digt.focus()
+        else:        
+            self.qntd_insert_digt.focus()
 
     def voltar_usu(self):
-        self.frame_gera.place_forget()
+        self.frame_gera.destroy()
+        self.mesas_aberta_bu.destroy()
         self.usuario_mainwmenu(8, 8)
 
     def exit(self):
@@ -603,11 +630,10 @@ class caixa(F_caixa, mes_geral):
         Status = "Aberto"
         banco = sqlite3.connect("banco.db")
         b = banco.cursor()
-
+        
         b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
         Id_venda = b.fetchone()[0]
         Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
-
         b.execute(
             "SELECT SUM(Preco_quant) FROM vendas_dados WHERE Id_venda = ?", (Id_venda,)
         )
@@ -630,23 +656,59 @@ class caixa(F_caixa, mes_geral):
         self.reload_aba()
 
     def fechamento(self):
-        self.fechar_venda()
+        cliente = self.def_cliente_digito.get()
+        Status = "Aberto"
+        banco = sqlite3.connect("banco.db")
+        b = banco.cursor()
+        
+        b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
+        Id_venda = b.fetchone()[0]
+        Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        b.execute(
+            "SELECT SUM(Preco_quant) FROM vendas_dados WHERE Id_venda = ?", (Id_venda,)
+        )
+        Valure = b.fetchone()[0]
+
+        if Valure is not None:
+            b.execute(
+                "UPDATE Venda SET Cliente = ?, Valor = ? WHERE Id = ?",
+                (cliente, Valure, Id_venda),
+            )
+
+            b.execute(
+                "INSERT INTO Venda (Cliente, Status) VALUES (?, ?)",
+                ("Consumidor", Status),
+            )
+
+        banco.commit()
+        banco.close()
+
+        self.fechar_venda(self.id_venda_mesa)
+        
+    def fecha_volta(self):
+        self.cdg_insert_digt.delete(0, END)
+        self.caixa_frame.destroy()
+        self.principal_frame(None)
 
     def reload_aba(self):
         self.frame_gera.place_forget()
-        self.principal_frame()
-
+        self.principal_frame(None)
     def Deletar_produto(self):
-        self.del_frame = LabelFrame(
-            self.caixa_frame, width=1200, height=600, bd=5, bg="#787777"
-        )
+        self.del_frame = Canvas(
+            self.caixa_frame, width=1200, height=600, bd=5, bg="black"
+        )        
         self.del_frame.place(x=100, y=100)
-
+        
+        for _ in range(random.randint(100,1000)):
+            x = random.randint(0, 1200)
+            y = random.randint(0, 600)
+            tamanho = random.uniform(0.5, 3)
+            self.del_frame.create_oval(x, y, x + tamanho, y + tamanho, fill='white', outline='white')
         self.Codigo_del_text = Label(
             self.del_frame,
             width=10,
             text="Codigo",
-            bg="#787777",
+            bg="black",
             font="arial 12",
             foreground="white",
             bd=0,
@@ -668,7 +730,7 @@ class caixa(F_caixa, mes_geral):
             self.del_frame,
             width=10,
             text="Quantidade",
-            bg="#787777",
+            bg="black",
             font="arial 12",
             foreground="white",
             bd=0,
@@ -738,10 +800,13 @@ class caixa(F_caixa, mes_geral):
         self.table.heading("#2", text="Preço")
         self.table.heading("#3", text="Quantidade")
         self.table.heading("#4", text="Valor total")
-
-        b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
-        Id_venda = b.fetchall()
-        Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        
+        if self.id_venda_mesa is None:
+            b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
+            Id_venda = b.fetchone()[0]
+            Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        else:
+            Id_venda=self.id_venda_mesa
 
         b.execute(
             "SELECT Cdg,PRODUTO,PREÇO,Quantidade,Preco_quant FROM vendas_dados WHERE Id_venda=?",
@@ -771,10 +836,13 @@ class caixa(F_caixa, mes_geral):
 
         conn = sqlite3.connect("banco.db")
         b = conn.cursor()
-
-        b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
-        Id_venda = b.fetchall()
-        Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        
+        if self.id_venda_mesa is None:
+            b.execute("SELECT Id FROM Venda ORDER BY Id DESC LIMIT 1")
+            Id_venda = b.fetchone()[0]
+            Id_venda = re.sub(r"[^\d,\.\d{0,2}$]+", "", str(Id_venda)).replace(",", "")
+        else:
+            Id_venda=self.id_venda_mesa
 
         b.execute(
             "SELECT PRODUTO,Quantidade,PREÇO FROM vendas_dados WHERE Id_venda=? AND cdg=?",
@@ -807,7 +875,9 @@ class caixa(F_caixa, mes_geral):
                         (qntd_diminui, cdg_valor),
                     )
                     conn.commit()
-                    self.reload_aba()
+                    
+                    self.frame_gera.place_forget()
+                    self.principal_frame(Id_venda)
 
             if float(qntd_valor) <= quantidade:
                 qntd_v = quantidade - int(qntd_valor)
@@ -834,7 +904,9 @@ class caixa(F_caixa, mes_geral):
                         (qntd_diminui, cdg_valor),
                     )
                     conn.commit()
-                    self.reload_aba()
+                    
+                    self.frame_gera.place_forget()
+                    self.principal_frame(Id_venda)
             else:
                 messagebox.showinfo("Erro", "Quantidade Invalida")
                 self.Qntd_del.focus()

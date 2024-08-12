@@ -1,5 +1,4 @@
 import sqlite3
-import time
 import tkinter as tk
 from tkinter import Label, ttk, messagebox,Toplevel
 from tkinter import *
@@ -16,8 +15,8 @@ class Acesso_Usuario(caixa):
         self.janela_principal.iconbitmap('ImageTk/logo.ico'
         )
         self.janela_principal.title("Usuario")
-        self.janela_usu = Frame(
-            self.janela_principal, width=1550, height=1000, bg="white"
+        self.janela_usu = Canvas(
+            self.janela_principal, width=1550, height=1000, bg="black"
         )
         self.janela_usu.place(x=0,y=0)
         self.topframe = LabelFrame(
@@ -149,7 +148,13 @@ class Acesso_Usuario(caixa):
         )
         self.caixa.place(x=510, y=27)
         self.caixa.image = img
-        self.funcionario()
+        
+        for _ in range(random.randint(100,1000)):
+            x = random.randint(0, 1800)
+            y = random.randint(0, 1000)
+            tamanho = random.uniform(0.5, 3)
+            self.janela_usu.create_oval(x, y, x + tamanho, y + tamanho, fill='white', outline='white')
+        self.estoque()
 
     def estoque(self):
         img = PhotoImage(file="ImageTk/confg.png")
@@ -178,7 +183,7 @@ class Acesso_Usuario(caixa):
         )
         self.pesquisa_cdg_digito.bind("<KeyPress-c>", lambda event: self.chama_caixa())
         self.pesquisa_cdg_digito.bind(
-            "<KeyPress>", lambda event: self.tabela_pesquisa_cdg()
+            "<KeyRelease>", lambda event: self.tabela_pesquisa_cdg()
         )
         self.pesquisa_cdg_digito.bind(
             "<KeyPress-a>", lambda event: self.execute_itens()
@@ -191,14 +196,12 @@ class Acesso_Usuario(caixa):
             "<Return>", lambda event: self.pesquisa_cdg_digito.focus()
         )
         self.pesquisa_nome_testo.bind(
-            "<KeyPress>", lambda event: self.tabela_pesquisa_nome()
+            "<KeyRelease>", lambda event: self.tabela_pesquisa_nome()
         )
         self.pesquisa_nome_testo.place(x=220, y=18, height=25)
 
         self.pesquisa_cdg_digito.focus()
-
-        Banco = sqlite3.connect("banco.db")
-        b = Banco.cursor()
+        
         estilo = ttk.Style()
         estilo.configure(
             "Treeview",
@@ -221,7 +224,9 @@ class Acesso_Usuario(caixa):
         self.table.heading("#1", text="Produto")
         self.table.heading("#2", text="Preço")
         self.table.heading("#3", text="Quantidade")
-
+          
+        Banco = sqlite3.connect("banco.db")
+        b = Banco.cursor()
         b.execute("SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque")
         rows = b.fetchall()
         for row in rows:
@@ -229,91 +234,59 @@ class Acesso_Usuario(caixa):
                 parent="", index="end", text=row[0], values=(row[1], row[2], row[3])
             )
             self.table.place(x=0, y=50, width=1200)
-        Banco.close()
-
         self.edts.place_forget()
 
     def tabela_pesquisa_cdg(self):
-        self.table.destroy()
+        codigim=self.pesquisa_cdg_digito.get()        
         Banco = sqlite3.connect("banco.db")
         b = Banco.cursor()
-        estilo = ttk.Style()
-        estilo.configure(
-            "Treeview",
-            font=("Arial", 15),
-            background="#9DCFFA",
-            foreground="black",
-            rowheight=25,
-            fieldbackground="#93FDF6",
-        )
-        self.table_1 = ttk.Treeview(self.table_itens, height=800)
-        self.table_1.place(x=0, y=50, width=1200)
-        self.table_1["columns"] = ("Codigo", "PRODUTO", "PREÇO", "QTDE")
 
-        self.table_1.column("#0", width=1, minwidth=1)
-        self.table_1.column("#1", width=50, minwidth=20)
-        self.table_1.column("#2", width=20, minwidth=20)
-        self.table_1.column("#3", width=50, minwidth=20)
+        try:
+            if codigim:
+                b.execute("SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque WHERE Codigo LIKE ?", ('%' + codigim + '%',))
+            else:
+                b.execute("SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque")
 
-        self.table_1.heading("#0", text="Codigo")
-        self.table_1.heading("#1", text="Produto")
-        self.table_1.heading("#2", text="Preço")
-        self.table_1.heading("#3", text="Quantidade")
+            rows = b.fetchall()
+            self.clear_table()
+            for row in rows:
+                self.table.insert("", "end", text=row[0], values=(row[1], row[2], row[3]))
 
-        b.execute(
-            "SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque WHERE Codigo=?",
-            (self.pesquisa_cdg_digito.get(),),
-        )
-        rows = b.fetchall()
-        for row in rows:
-            self.table_1.insert(
-                parent="", index="end", text=row[0], values=(row[1], row[2], row[3])
-            )
-            self.table_1.place(x=0, y=50, width=1200)
-        Banco.close()
+        except sqlite3.Error as e:
+            print("Erro ao acessar o banco de dados:", e)
+
+        finally:
+            Banco.close()
 
     def limpa_pesquisa(self):
         self.pesquisa_cdg_digito.delete(0, END)
         self.pesquisa_nome_testo.delete(0, END)
 
     def tabela_pesquisa_nome(self):
-        self.table.destroy()
+        texto_digitado = self.pesquisa_nome_testo.get()
         Banco = sqlite3.connect("banco.db")
         b = Banco.cursor()
-        estilo = ttk.Style()
-        estilo.configure(
-            "Treeview",
-            font=("Arial", 15),
-            background="#9DCFFA",
-            foreground="black",
-            rowheight=25,
-            fieldbackground="#93FDF6",
-        )
-        self.table_2 = ttk.Treeview(self.table_itens, height=800)
-        self.table_2.place(x=0, y=50, width=1200)
-        self.table_2["columns"] = ("Codigo", "PRODUTO", "PREÇO", "QTDE")
 
-        self.table_2.column("#0", width=1, minwidth=1)
-        self.table_2.column("#1", width=50, minwidth=20)
-        self.table_2.column("#2", width=20, minwidth=20)
-        self.table_2.column("#3", width=50, minwidth=20)
+        try:
+            if texto_digitado:
+                b.execute("SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque WHERE PRODUTO LIKE ?", ('%' + texto_digitado + '%',))
+            else:
+                b.execute("SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque")
 
-        self.table_2.heading("#0", text="Codigo")
-        self.table_2.heading("#1", text="Produto")
-        self.table_2.heading("#2", text="Preço")
-        self.table_2.heading("#3", text="Quantidade")
+            rows = b.fetchall()
+            self.clear_table()
+            for row in rows:
+                self.table.insert("", "end", text=row[0], values=(row[1], row[2], row[3]))
 
-        b.execute(
-            "SELECT Codigo, PRODUTO, PREÇO, QTDE FROM Estoque WHERE Codigo=?",
-            (self.pesquisa_nome_testo.get(),),
-        )
-        rows = b.fetchall()
-        for row in rows:
-            self.table_2.insert(
-                parent="", index="end", text=row[0], values=(row[1], row[2], row[3])
-            )
-            self.table_2.place(x=0, y=50, width=1200)
-        Banco.close()
+        except sqlite3.Error as e:
+            print("Erro ao acessar o banco de dados:", e)
+
+        finally:
+            Banco.close()
+            
+    def clear_table(self):
+        for item in self.table.get_children():
+            self.table.delete(item)
 
     def Pedidos(self):
         img = PhotoImage(file="ImageTk/confg.png")
@@ -746,10 +719,7 @@ class Acesso_Usuario(caixa):
         txtx_sla=Label(self.fram_hole2,text=f"  7.92 % | {(valor110+valor60+self.sal+reflexos)*(7.92/100):.2f} R$",width=15,font="arial 10 bold",bg="#cde8c5",bd=3)
         txtx_sla.place(x=10,y=100)
         txtx_sla=Label(self.fram_hole2,text=f"{(valor110+valor60+self.sal+reflexos)-((valor110+valor60+self.sal+reflexos)*(7.92/100)):.2f} R$",width=15,font="arial 12 bold",bg="#cde8c5",bd=3)
-        txtx_sla.place(x=0,y=150)
-
-        
-        
+        txtx_sla.place(x=0,y=150)     
     def cliente(self):
         img = PhotoImage(file="ImageTk/add_usu.png")
         self.table_clientes = LabelFrame(
@@ -1185,9 +1155,9 @@ class Acesso_Usuario(caixa):
         except:
             codigo = self.Cdg.get()
             produto = self.Produto.get()
-            preco = self.Preco.get()
-            custo = self.custo.get()
-            qtde = self.Qtde.get()
+            preco = self.Preco.get().replace(",", ".")
+            custo = self.custo.get().replace(",", ".")
+            qtde = self.Qtde.get().replace(",", ".")
 
             query = "INSERT INTO Estoque (Codigo, PRODUTO, PREÇO, custo, QTDE) VALUES (?, ?, ?, ?, ?)"
             values = (codigo, produto, preco, custo, qtde)
@@ -1314,5 +1284,5 @@ class Acesso_Usuario(caixa):
         self.janela_usu.destroy()
         self.topframe.destroy()
         self.mainframe.destroy()
-        self.principal_frame()
+        self.principal_frame(None)
 

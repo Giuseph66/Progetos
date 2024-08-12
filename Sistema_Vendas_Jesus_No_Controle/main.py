@@ -32,10 +32,10 @@ class Main_Principal(Login):
             "INSERT INTO Estoque (Codigo,PRODUTO,PREÇO,custo,QTDE) VALUES (?,?,?,?,?)",
             (
                 1,
-                "",
-                0,
-                0,
-                0,
+                1,
+                1,
+                1,
+                1,
             ),
         )
         conn.commit()
@@ -46,12 +46,12 @@ class Main_Principal(Login):
     table_exists = cursor.fetchone()
     if not table_exists:
         conn.execute(
-            "CREATE TABLE Venda (Id INTEGER PRIMARY KEY AUTOINCREMENT,Cliente integer ,Valor integer ,Status integer,deb INTEGER,cre INTEGER,dim INTEGER,troco INTEGER,desc INTEGER)"
+            "CREATE TABLE Venda (Id INTEGER PRIMARY KEY AUTOINCREMENT,Cliente integer ,Valor integer ,Status integer,deb INTEGER,cre INTEGER,pix INTEGER,dim INTEGER,troco INTEGER,desc INTEGER)"
         )
         Status = "Aberto"
         conn.execute(
-            "INSERT INTO Venda (Cliente, Status,deb,cre,dim,Desc) VALUES (?, ?, ?, ?, ?,?)",
-            (0, Status, 0, 0, 0, 0),
+            "INSERT INTO Venda (Cliente, Status,deb,cre,dim,pix,Desc) VALUES (?, ?, ?, ?,?, ?,?)",
+            (0, Status, 0, 0, 0, 0,0),
         )
         conn.commit()
     cursor.execute(
@@ -107,6 +107,13 @@ class Main_Principal(Login):
             "CREATE TABLE ponto (funcionario INTERGE,data INTERGE,entri_manha INTERGE,sai_manha INTERGE,dia_semana INTERGE,entri_tarde INTERGE,sai_tarde INTERGE,salario INTERGE,hora INTERGE)"
         )
         conn.commit()
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='empresa';"
+    )
+    table_exists = cursor.fetchone()
+    if not table_exists:
+        conn.execute("""CREATE TABLE empresa (nome TEXT,gmail TEXT,cell TEXT,cnpj TEXT,iee TEXT,pix TEXT,endereco TEXT,nu_endereco TEXT,bairro TEXT,complemento TEXT,estado TEXT,cidade TEXT,cep TEXT);""")
+
 
     conn.close()
 

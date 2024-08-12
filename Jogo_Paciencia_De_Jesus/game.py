@@ -12,10 +12,10 @@ def tela_inicio():
     preto = (0, 0, 0)
     amarelo = (255, 255, 0)
 
-    background = pygame.image.load("Jogo_Paciencia_De_Jesus/img/fundo_inicio.jpg").convert()
-    asp=pygame.image.load("Jogo_Paciencia_De_Jesus/img/asp.png").convert()
+    background = pygame.image.load("img/fundo_inicio.jpg").convert()
+    asp=pygame.image.load("img/asp.png").convert()
     asp = pygame.transform.scale(asp, (1200,1200))
-    fundo=pygame.image.load("Jogo_Paciencia_De_Jesus/img/fundo.png").convert()
+    fundo=pygame.image.load("img/fundo.png").convert()
 
     angulo = 0
 
@@ -66,11 +66,11 @@ def tela_inicio():
         tela.fill((0,0,0))
 
 
-        fds_ = pygame.image.load("Jogo_Paciencia_De_Jesus/img/fds.png").convert_alpha()
-        img_boneco_1 = pygame.image.load("Jogo_Paciencia_De_Jesus/img/boneco_1.png").convert_alpha()
-        img_boneco_2 = pygame.image.load("Jogo_Paciencia_De_Jesus/img/boneco_2.png").convert_alpha()
-        img_ponto=pygame.image.load("Jogo_Paciencia_De_Jesus/img/ponto.png").convert_alpha()
-        img_add=pygame.image.load("Jogo_Paciencia_De_Jesus/img/botao_adicionar.png").convert_alpha
+        fds_ = pygame.image.load("img/fds.png").convert_alpha()
+        img_boneco_1 = pygame.image.load("img/boneco_1.png").convert_alpha()
+        img_boneco_2 = pygame.image.load("img/boneco_2.png").convert_alpha()
+        img_ponto=pygame.image.load("img/ponto.png").convert_alpha()
+        img_add=pygame.image.load("img/botao_adicionar.png").convert_alpha
         vez,ganhei,fds=False,False,False
         
         posicao_botao_nao = (350, 150)
